@@ -13,7 +13,7 @@ const SocialLogin = () => {
       const currentUser = res.user;
 
       const response = await axios.post(
-        "http://localhost:3000/api/user",
+        `${import.meta.env.VITE_BASEURL}/api/user`,
         currentUser
       );
 

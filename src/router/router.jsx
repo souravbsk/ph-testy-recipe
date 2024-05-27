@@ -7,6 +7,7 @@ import RecipeDetails from "../Shared/RecipeDetails/RecipeDetails";
 import AddRecipe from "../Pages/AddRecipe/AddRecipe";
 import ParchesCoin from "../Pages/ParchesCoin/ParchesCoin";
 import MyRecipe from "../Pages/MyRecipe/MyRecipe";
+import NotFoundPage from "../Shared/NotFoundPage/NotFoundPage";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      {
+        path: "*",
+        element: <NotFoundPage></NotFoundPage>,
+      }
     ],
   },
 ]);
