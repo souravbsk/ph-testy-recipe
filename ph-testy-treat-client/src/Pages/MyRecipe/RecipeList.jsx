@@ -12,6 +12,7 @@ const RecipeList = () => {
   const { user } = useContext(AuthContext);
   const [getRecipeList, { data, isLoading, isError, error }] =
     useGetAllRecipeByEmailMutation();
+    console.log(data)
   const [refetch, setRefetch] = useState(false);
   const [
     deleteRecipe,
@@ -31,9 +32,7 @@ const RecipeList = () => {
     }
   }, [user, refetch]);
 
-
   const handleDeleteRecipe = async (value) => {
-
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -70,7 +69,13 @@ const RecipeList = () => {
         accessorFn: (row) => (
           <div className="avatar">
             <div className="w-14 rounded-full ">
-              <img src={row?.recipe_image} />
+              <img
+                src={
+                  row?.imageCloud === false
+                    ? `${import.meta.env.VITE_BASEURL}/${row?.recipe_image}`
+                    : row?.recipe_image
+                }
+              />
             </div>
           </div>
         ),
@@ -99,7 +104,7 @@ const RecipeList = () => {
       {
         header: "purchased",
         accessorFn: (row) =>
-          row?.purChased_by.length > 0 ? row?.purChased_by.length : 0,
+          row?.purChased_by?.length > 0 ? row?.purChased_by?.length : 0,
         size: 40,
       },
       {

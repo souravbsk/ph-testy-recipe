@@ -5,10 +5,37 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 var cors = require("cors");
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 3000;
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const bodyParser = require("body-parser");
+// Multer storage configuration
+const storage = multer.diskStorage({
+  destination: "./uploads/", // Destination folder for uploaded files
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + path.extname(file.originalname);
+    cb(null, "recipe_image-" + uniqueSuffix);
+  },
+});
+
+// Multer instance with simplified file filter and storage configuration
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Accept all image file types
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"));
+    }
+  },
+});
+
 
 app.use(cors());
 app.use(express.json());
-
+app.use(bodyParser.json());
+app.use(bodyParser.raw({ limit: "10mb" }));
 //middleware
 
 const verifyJWT = (req, res, next) => {
@@ -29,7 +56,7 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-const uri = `mongodb+srv://${process.env.DBNAME}:${process.env.DBPASS}@cluster0.pr3rbd0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = process.env.URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -289,42 +316,60 @@ async function run() {
     //add recipe start
 
     // Add Recipe
-    app.post("/api/recipe/create", verifyJWT, async (req, res) => {
-      const recipeData = req.body;
-      console.log(recipeData);
-
+    app.post("/api/recipe/create", upload.single("recipe_image"), async (req, res) => {
+      console.log(req.body); // Form fields
+      console.log(req.file); // Uploaded file details
+    
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+    
+      const {
+        recipe_name,
+        creator_Email,
+        recipe_details,
+        embedded_code,
+        country,
+        category,
+      } = req.body;
+    
+      const imageUrl = req?.file ? req.file?.path : "";
+      console.log(imageUrl)
+    
       try {
+        // Construct new recipe data object with image URL
         const newRecipeData = {
-          ...recipeData,
+          recipe_name,
+          recipe_image: imageUrl, // Store the URL to the uploaded file
+          creator_Email,
+          recipe_details,
+          embedded_code,
+          country,
+          category,
+          imageCloud: false,
           watchCount: 0,
-          purChased_by: [],
+          purchased_by: [],
           createdAt: new Date(),
         };
-
+    
+        // Save new recipe data to database
         const result = await recipeCollection.insertOne(newRecipeData);
         if (!result.insertedId) {
           return res.status(500).json({ error: "Failed to insert recipe" });
         }
-
-        // Increment user's coin count
-        console.log(recipeData.creator_Email);
-        const user = await userCollection.findOne({
-          email: recipeData.creator_Email,
-        });
+    
+        // Update user's coin count example
+        const user = await userCollection.findOne({ email: creator_Email });
         if (!user) {
           return res.status(404).json({ error: "User not found" });
         }
-
-        const updatedUser = {
-          ...user,
-          coin: user.coin + 1, // Increase coin count by 1
-        };
-
+    
         await userCollection.updateOne(
-          { email: recipeData.creator_Email },
-          { $set: updatedUser }
+          { email: creator_Email },
+          { $set: { coin: user.coin + 1 } }
         );
-
+    
+        // Respond with success message and data
         res.status(201).json({
           success: true,
           message: "Recipe created successfully",
@@ -335,7 +380,8 @@ async function run() {
         res.status(500).json({ error: "Internal Server Error" });
       }
     });
-
+    // Serve uploaded files statically (optional)
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
     //get all recipe
 
     app.get("/api/recipes", async (req, res) => {
@@ -414,20 +460,53 @@ async function run() {
     // delete recipe
     app.delete("/api/recipe/:id", verifyJWT, async (req, res) => {
       try {
-        const recipeId = req?.params?.id;
+        const recipeId = req.params.id;
         const filter = { _id: new ObjectId(recipeId) };
+
+        // Find the recipe to get the image path before deleting
+        const recipe = await recipeCollection.findOne(filter);
+
+        if (!recipe) {
+          return res.status(404).json({ error: "Recipe not found" });
+        }
+
         const recipes = await recipeCollection.deleteOne(filter);
 
-        res.status(200).json({
-          success: true,
-          data: recipes,
-        });
+        // Delete the image file from the upload folder
+        if (recipe.recipe_image) {
+          const imagePath = path.resolve(recipe.recipe_image); // Ensure the path is absolute
+          console.log("Attempting to delete image at path:", imagePath);
+
+          fs.access(imagePath, fs.constants.F_OK, (err) => {
+            if (err) {
+              console.error("File does not exist:", imagePath);
+              res.status(404).json({ error: "Image file not found" });
+            } else {
+              fs.unlink(imagePath, (err) => {
+                if (err) {
+                  console.error("Error deleting image:", err);
+                  res.status(500).json({ error: "Error deleting image" });
+                } else {
+                  console.log("Image deleted successfully");
+                  res.status(200).json({
+                    success: true,
+                    data: recipes,
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          res.status(200).json({
+            success: true,
+            data: recipes,
+          });
+        }
       } catch (error) {
-        console.error("Error fetching recipes:", error);
+        console.error("Error deleting recipe:", error);
         res.status(500).json({ error: "Internal Server Error" });
       }
     });
-
     //get all country name
     app.get("/api/country", async (req, res) => {
       try {

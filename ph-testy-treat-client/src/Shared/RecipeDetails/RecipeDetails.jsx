@@ -31,7 +31,11 @@ const RecipeDetails = () => {
           <figure className="flex-1">
             <img 
             className="h-full"
-              src={data?.data?.recipe?.recipe_image}
+              src={
+                data?.data?.recipe?.imageCloud === false
+                  ? `${import.meta.env.VITE_BASEURL}/${data?.data?.recipe?.recipe_image}`
+                  : data?.data?.recipe?.recipe_image
+              }
               alt={data?.data?.recipe?.recipe_name}
             />
           </figure>

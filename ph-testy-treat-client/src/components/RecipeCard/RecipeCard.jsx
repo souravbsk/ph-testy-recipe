@@ -92,7 +92,11 @@ const RecipeCard = ({ recipe, isSuggestion }) => {
     <div className="card  bg-base-100 shadow-xl">
       <figure className="px-10 pt-10">
         <img
-          src={recipe?.recipe_image}
+          src={
+            recipe?.imageCloud === false
+              ? `${import.meta.env.VITE_BASEURL}/${recipe?.recipe_image}`
+              : recipe?.recipe_image
+          }
           alt={recipe?.recipe_name}
           className="rounded-xl md:h-52 w-full object-cover"
         />
