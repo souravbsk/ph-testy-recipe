@@ -1,2 +1,14 @@
-- name: Upload deploy script
-  run: scp -o StrictHostKeyChecking=no deploy.sh root@157.173.222.223:/root/
+#!/bin/bash
+
+# Navigate to the project directory
+cd /root/test-applicaion/ph-testy-app/ph-testy-treat-client/
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Optionally, restart services or perform other deployment tasks
+# Example: Restart a service if using pm2
+# pm2 restart all
