@@ -12,6 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'  # Or any version that matches your VPS
+
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
