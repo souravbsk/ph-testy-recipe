@@ -20,10 +20,13 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
           cd /root/test-applicaion/ph-testy-app/ph-testy-treat-client
           git pull origin main
           npm install
           npm run build
+          rm -rf /var/www/html/my-app
+          mkdir -p /var/www/html/my-app
+          cp -r dist/* /var/www/html/my-app
           pm2 restart all
           EOF
