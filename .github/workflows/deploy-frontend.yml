@@ -1,0 +1,37 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ph-client  # Specify the environment here
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Upload deployment files
+        run: scp -o StrictHostKeyChecking=no -r ./* root@157.173.222.223:/root/test-applicaion/ph-testy-app/ph-testy-treat-client/
+
+      - name: Run deployment commands
+        run: |
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
+          export PATH=/root/.nvm/versions/node/v22.5.1/bin:$PATH
+          cd /root/test-applicaion/ph-testy-app/ph-testy-treat-client/
+          npm install
+          npm run build
+          EOF
