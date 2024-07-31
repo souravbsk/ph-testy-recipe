@@ -17,9 +17,22 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Upload deploy script
-        run: scp -o StrictHostKeyChecking=no deploy.sh root@157.173.222.223:/root/
-
-      - name: Run deploy script
+      - name: Deploy application
         run: |
-          ssh -o StrictHostKeyChecking=no root@157.173.222.223 'bash /root/deploy.sh'
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
+            # Navigate to the application directory
+            cd /path/to/your/application
+
+            # Pull the latest code from the repository
+            git pull origin main
+
+            # Install dependencies (if needed)
+            npm install
+
+            # Build the application (if needed)
+            npm run build
+
+            # Restart the application
+            # Replace this with the command to restart your app (e.g., PM2, systemd)
+            pm2 restart all
+          EOF
