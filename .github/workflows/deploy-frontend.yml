@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'  # Or any version that matches your VPS
+          node-version: '22.x'  # Match this to your VPS Node.js version
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
@@ -28,7 +28,7 @@ jobs:
       - name: Run deployment commands
         run: |
           ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
-          export PATH=$PATH:/root/.nvm/versions/node/v22.5.1/bin
+          export PATH=/root/.nvm/versions/node/v22.5.1/bin:$PATH
           cd /root/test-applicaion/ph-testy-app/ph-testy-treat-client/
           npm install
           npm run build
