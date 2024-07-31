@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ph-client  # Specify the environment here
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,6 +26,19 @@ jobs:
 
       - name: Upload deployment files
         run: scp -o StrictHostKeyChecking=no -r ./* root@157.173.222.223:/root/test-applicaion/ph-testy-app/ph-testy-treat-client/
+
+      - name: Create .env file on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
+          echo "VITE_BASEURL=${{ secrets.VITE_BASEURL }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_APIKEY=${{ secrets.VITE_APIKEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_AUTHDOMAIN=${{ secrets.VITE_AUTHDOMAIN }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_PROJECTID=${{ secrets.VITE_PROJECTID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_STORAGEBUCKET=${{ secrets.VITE_STORAGEBUCKET }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_MESSAGINGSENDERID=${{ secrets.VITE_MESSAGINGSENDERID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_APPID=${{ secrets.VITE_APPID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_MEASUREMENTID=${{ secrets.VITE_MEASUREMENTID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          EOF
 
       - name: Run deployment commands
         run: |
