@@ -8,6 +8,7 @@ const Home = () => {
   return (
     <div>
       <Banner></Banner>
+      <h1>deploy by github pipeline</h1>
       <CountUpSection></CountUpSection>
       <OurRecipes></OurRecipes>
       <DevInfo></DevInfo>
