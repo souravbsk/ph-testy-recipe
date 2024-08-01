@@ -38,6 +38,7 @@ jobs:
           echo "VITE_AUTHDOMAIN=${{ secrets.VITE_AUTHDOMAIN }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
           echo "VITE_APPID=${{ secrets.VITE_APPID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
           echo "VITE_APIKEY=${{ secrets.VITE_APIKEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_IMAGE_KEY=${{ secrets.VITE_IMAGE_KEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
           EOF
 
       - name: Run deployment commands
