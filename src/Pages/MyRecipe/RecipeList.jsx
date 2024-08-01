@@ -12,6 +12,7 @@ const RecipeList = () => {
   const { user } = useContext(AuthContext);
   const [getRecipeList, { data, isLoading, isError, error }] =
     useGetAllRecipeByEmailMutation();
+    console.log(data)
   const [refetch, setRefetch] = useState(false);
   const [
     deleteRecipe,
@@ -22,6 +23,7 @@ const RecipeList = () => {
       error: deleteError,
     },
   ] = useDeleteRecipeByIdMutation();
+  // 'fdsf'
   useEffect(() => {
     if (user) {
       const handleGetRecipe = async () => {
@@ -31,11 +33,7 @@ const RecipeList = () => {
     }
   }, [user, refetch]);
 
-  console.log(data, "fsafsadf");
-
   const handleDeleteRecipe = async (value) => {
-    console.log(value);
-
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -46,7 +44,6 @@ const RecipeList = () => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        console.log("first");
         deleteRecipe(value?._id).then((res) => {
           if (res.data.data?.deletedCount > 0) {
             setRefetch(!refetch);
@@ -73,7 +70,13 @@ const RecipeList = () => {
         accessorFn: (row) => (
           <div className="avatar">
             <div className="w-14 rounded-full ">
-              <img src={row?.recipe_image} />
+              <img
+                src={
+                  row?.imageCloud === false
+                    ? `${import.meta.env.VITE_BASEURL}/${row?.recipe_image}`
+                    : row?.recipe_image
+                }
+              />
             </div>
           </div>
         ),
@@ -102,7 +105,7 @@ const RecipeList = () => {
       {
         header: "purchased",
         accessorFn: (row) =>
-          row?.purChased_by.length > 0 ? row?.purChased_by.length : 0,
+          row?.purChased_by?.length > 0 ? row?.purChased_by?.length : 0,
         size: 40,
       },
       {
