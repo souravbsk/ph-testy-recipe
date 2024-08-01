@@ -28,6 +28,18 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no -r ./* root@157.173.222.223:/root/test-applicaion/ph-testy-app/ph-testy-treat-client/
 
+      - name: Create .env file on server
+        run: |
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
+          echo "VITE_STORAGEBUCKET=${{ secrets.VITE_STORAGEBUCKET }}" > /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_PROJECTID=${{ secrets.VITE_PROJECTID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_MESSAGINGSENDERID=${{ secrets.VITE_MESSAGINGSENDERID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_BASEURL=${{ secrets.VITE_BASEURL }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_AUTHDOMAIN=${{ secrets.VITE_AUTHDOMAIN }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_APPID=${{ secrets.VITE_APPID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          echo "VITE_APIKEY=${{ secrets.VITE_APIKEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          EOF
+
       - name: Run deployment commands
         run: |
           ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
@@ -36,14 +48,3 @@ jobs:
           npm install
           npm run build
           EOF
-          echo "Deployment completed successfully."
-
-      - name: Use environment variables
-        run: |
-          echo "VITE_STORAGEBUCKET is: ${{ secrets.VITE_STORAGEBUCKET }}"
-          echo "VITE_PROJECTID is: ${{ secrets.VITE_PROJECTID }}"
-          echo "VITE_MESSAGINGSENDERID is: ${{ secrets.VITE_MESSAGINGSENDERID }}"
-          echo "VITE_BASEURL is: ${{ secrets.VITE_BASEURL }}"
-          echo "VITE_AUTHDOMAIN is: ${{ secrets.VITE_AUTHDOMAIN }}"
-          echo "VITE_APPID is: ${{ secrets.VITE_APPID }}"
-          echo "VITE_APIKEY is: ${{ secrets.VITE_APIKEY }}"
