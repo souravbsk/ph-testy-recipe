@@ -16,8 +16,9 @@ const AddRecipe = () => {
   const { isCoinRefetch } = useSelector((state) => state.coin);
   const dispatch = useDispatch();
 
-  const imgKey = "a7bbb2deb934c4cc51b1058207d12d2e";
-  const url = `https://api.imgbb.com/1/upload?key=${imgKey}`;
+  const url = `https://api.imgbb.com/1/upload?key=${
+    import.meta.env.VITE_IMAGEBB_KEY
+  }`;
 
   const handleAddRecipe = async (e) => {
     e.preventDefault();
