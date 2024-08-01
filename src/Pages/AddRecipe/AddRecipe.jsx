@@ -27,7 +27,7 @@ const AddRecipe = () => {
     const embeddedcode = form.embeddedcode.value;
     const country = form.country.value;
     const category = form.category.value;
-    const inputImage = form.image.files[0];
+    const inputImage = form.recipe_image.files[0];
     setLoading(true);
 
     // Validate YouTube embed code
@@ -44,30 +44,18 @@ const AddRecipe = () => {
     }
     setError("");
 
-    console.log("second");
 
     const formData = new FormData();
-    formData.append("image", inputImage);
+    formData.append("recipe_image", inputImage);
+    formData.append("recipe_name", title);
+    formData.append("creator_Email", user.email);
+    formData.append("recipe_details", description);
+    formData.append("embedded_code", embeddedcode);
+    formData.append("country", country);
+    formData.append("category", category);
 
     try {
-      const imageResponse = await fetch(url, {
-        method: "POST",
-        body: formData,
-      }).then((res) => res.json());
-
-      if (imageResponse.success) {
-        const imgUrl = imageResponse.data.display_url;
-        const newRecipe = {
-          recipe_name: title,
-          recipe_image: imgUrl,
-          creator_Email: user.email,
-          recipe_details: description,
-          embedded_code: embeddedcode,
-          country,
-          category,
-        };
-
-        const response = await addRecipe(newRecipe);
+      const response = await addRecipe(formData);
         if (response?.data?.data?.insertedId) {
           dispatch(setReFetch(!isCoinRefetch));
           Swal.fire({
@@ -82,7 +70,6 @@ const AddRecipe = () => {
           setYoutubeCode("");
           setLoading(false);
         }
-      }
     } catch (err) {
       console.error(err);
       setError("An error occurred while adding the recipe.");
@@ -179,7 +166,7 @@ const AddRecipe = () => {
               </label>
               <input
                 type="file"
-                name="image"
+                name="recipe_image"
                 className="file-input file-input-bordered w-full"
                 required
               />
