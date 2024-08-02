@@ -1,14 +1,14 @@
-name: Deploy to VPS
+name: Deploy Backend to VPS
 
 on:
   push:
     branches:
-      - main
+      - main  # Adjust this to your deployment branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ph-client  # Specify the environment here
+    environment: backend  # Specify the environment here
 
     steps:
       - name: Checkout code
@@ -17,35 +17,44 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: '22.x'  # Adjust this to your Node.js version
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Upload deployment files
-        run: |
-          scp -o StrictHostKeyChecking=no -r ./* root@157.173.222.223:/root/test-applicaion/ph-testy-app/ph-testy-treat-client/
-
-      - name: Create .env file on server
+      - name: Delete existing files on server
         run: |
           ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
-          echo "VITE_STORAGEBUCKET=${{ secrets.VITE_STORAGEBUCKET }}" > /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_PROJECTID=${{ secrets.VITE_PROJECTID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_MESSAGINGSENDERID=${{ secrets.VITE_MESSAGINGSENDERID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_BASEURL=${{ secrets.VITE_BASEURL }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_AUTHDOMAIN=${{ secrets.VITE_AUTHDOMAIN }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_APPID=${{ secrets.VITE_APPID }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_APIKEY=${{ secrets.VITE_APIKEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
-          echo "VITE_IMAGE_KEY=${{ secrets.VITE_IMAGE_KEY }}" >> /root/test-applicaion/ph-testy-app/ph-testy-treat-client/.env
+          rm -rf ~/test-applicaion/ph-testy-app/ph-testy-treat-server/*
+          EOF
+
+      - name: Upload deployment files
+        run: |
+          scp -o StrictHostKeyChecking=no -r ./* root@157.173.222.223:~/test-applicaion/ph-testy-app/ph-testy-treat-server/
+
+      - name: Create .env file on server
+        env:
+          DBNAME: ${{ secrets.DBNAME }}
+          DBPASS: ${{ secrets.DBPASS }}
+          SECRET_ACCESS_TOKEN: ${{ secrets.SECRET_ACCESS_TOKEN }}
+          URI: ${{ secrets.MONGODB_URI }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
+          echo "DBNAME=$DBNAME" > ~/test-applicaion/ph-testy-app/ph-testy-treat-server/.env
+          echo "DBPASS=$DBPASS" >> ~/test-applicaion/ph-testy-app/ph-testy-treat-server/.env
+          echo "SECRET_ACCESS_TOKEN=$SECRET_ACCESS_TOKEN" >> ~/test-applicaion/ph-testy-app/ph-testy-treat-server/.env
+          echo "URI=$URI" >> ~/test-applicaion/ph-testy-app/ph-testy-treat-server/.env
+          echo "PORT=$PORT" >> ~/test-applicaion/ph-testy-app/ph-testy-treat-server/.env
           EOF
 
       - name: Run deployment commands
         run: |
           ssh -o StrictHostKeyChecking=no root@157.173.222.223 << 'EOF'
           export PATH=/root/.nvm/versions/node/v22.5.1/bin:$PATH
-          cd /root/test-applicaion/ph-testy-app/ph-testy-treat-client/
+          cd ~/test-applicaion/ph-testy-app/ph-testy-treat-server/
           npm install
-          npm run build
+          pm2 reload all  # Or pm2 restart all, depending on your setup
           EOF
